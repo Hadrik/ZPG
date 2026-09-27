@@ -30,8 +30,6 @@ target_include_directories(glad PUBLIC
 add_executable(${PROJECT_NAME} main.cpp
         Shader.cpp
         Shader.h
-        stb_image.h
-        stb_image.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad glm::glm)
