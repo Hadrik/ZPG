@@ -28,8 +28,20 @@ target_include_directories(glad PUBLIC
 
 # Header files also need to be included for IDE
 add_executable(${PROJECT_NAME} main.cpp
+        Application.cpp
+        Application.h
+        Scene.cpp
+        Scene.h
+        Model.cpp
+        Model.h
         Shader.cpp
         Shader.h
+        ShaderProgram.cpp
+        ShaderProgram.h
+        DrawableObject.cpp
+        DrawableObject.h
+        Transformation.cpp
+        Transformation.h
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad glm::glm)
