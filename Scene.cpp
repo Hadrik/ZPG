@@ -10,6 +10,6 @@ void Scene::addObject(DrawableObject&& object) {
 
 void Scene::draw() const {
     for (const auto& object : _objects) {
-        object.draw();
+        object.draw(_shaderProgram);
     }
 }

@@ -6,17 +6,21 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <random>
 
 #include "Models/sphere.h"
 #include "Models/text_mesh.h"
 #include "Models/tree.h"
 #include "Models/bushes.h"
 #include "Models/triangle.h"
+#include "Models/sun.h"
+#include "Models/earth.h"
+#include "Models/moon.h"
 
 Application::Application() {
     glfwInit();
 
-    _window = glfwCreateWindow(800, 600, "ZPG", nullptr, nullptr);
+    _window = glfwCreateWindow(800, 800, "ZPG", nullptr, nullptr);
     if (!_window) {
         std::cout << "Window creation failed" << std::endl;
         glfwTerminate();
@@ -51,7 +55,7 @@ Application::Application() {
     glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
     glEnable(GL_DEPTH_TEST);
 
-    _shader = std::make_unique<ShaderProgram>("../VShader.vert", "../FShader.frag");
+    _shaderBasic = std::make_unique<ShaderProgram>("../VShader.vert", "../FShader.frag");
 }
 
 Application::~Application() {
@@ -60,73 +64,111 @@ Application::~Application() {
 }
 
 void Application::prepareScenes() {
-    Scene triangleScene{};
-    triangleScene.addObject(DrawableObject(Model(triangle, 3), *_shader));
-    DrawableObject tiangleSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT), *_shader);
+    Scene triangleScene(*_shaderBasic);
+    DrawableObject translatedTriangle(Model(triangle, 3));
+    translatedTriangle.transformation()
+        .translate(glm::vec3(-0.45f, 0.0f, 0.0f))
+        .rotate(0.6f, glm::vec3(0.0f, 0.0f, 1.0f));
+    triangleScene.addObject(std::move(translatedTriangle));
+
+    DrawableObject rotatedTriangle(Model(triangle, 3));
+    rotatedTriangle.transformation()
+        .rotate(0.6f, glm::vec3(0.0f, 0.0f, 1.0f))
+        .translate(glm::vec3(0.45f, 0.0f, 0.0f));
+    triangleScene.addObject(std::move(rotatedTriangle));
+
+    DrawableObject tiangleSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
     tiangleSignature.transformation()
-        .scale(0.1f)
-        .translate(glm::vec3(-0.9f, -0.9f, 0.0f));
+        .translate(glm::vec3(-0.9f, -0.9f, 0.0f))
+        .scale(0.1f);
     triangleScene.addObject(std::move(tiangleSignature));
     _scenes.push_back(std::move(triangleScene));
 
-    Scene sphereScene{};
-    sphereScene.addObject(DrawableObject(Model(sphere, 2880), *_shader));
-    DrawableObject sphereSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT), *_shader);
+    Scene sphereScene(*_shaderBasic);
+    sphereScene.addObject(DrawableObject(Model(sphere, 2880)));
+    DrawableObject sphereSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
     sphereSignature.transformation()
-        .scale(0.1f)
-        .translate(glm::vec3(-0.9f, -0.9f, 0.0f));
+        .translate(glm::vec3(-0.9f, -0.9f, 0.0f))
+        .scale(0.1f);
     sphereScene.addObject(std::move(sphereSignature));
     _scenes.push_back(std::move(sphereScene));
 
-    Scene forestScene{};
-    const glm::vec3 treePositions[] = {
-        {-0.95f, -0.55f, 0.0f}, {-0.65f, -0.50f, 0.0f},
-        {-0.35f, -0.55f, 0.0f}, {-0.05f, -0.50f, 0.0f},
-        { 0.25f, -0.55f, 0.0f}, { 0.55f, -0.50f, 0.0f},
-        { 0.85f, -0.55f, 0.0f}, {-0.80f, -0.15f, 0.0f},
-        { 0.00f, -0.10f, 0.0f}, { 0.70f, -0.15f, 0.0f}
-    };
-    for (const auto& position : treePositions) {
-        DrawableObject treeObject(Model(tree, 92814), *_shader);
+    Scene forestScene(*_shaderBasic);
+    std::mt19937 generator(42);
+    std::uniform_real_distribution<float> xPosition(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> yPosition(-0.55f, 0.25f);
+    std::uniform_real_distribution<float> treeScale(0.07f, 0.13f);
+    for (int i = 0; i < 12; ++i) {
+        const glm::vec3 position(xPosition(generator), yPosition(generator), 0.0f);
+        DrawableObject treeObject(Model(tree, 92814));
         treeObject.transformation()
-            .scale(0.1f)
-            .translate(position);
+            .translate(position)
+            .scale(treeScale(generator));
         forestScene.addObject(std::move(treeObject));
     }
 
-    const glm::vec3 bushPositions[] = {
-        {-1.05f, -0.85f, 0.1f}, {-0.80f, -0.82f, 0.1f},
-        {-0.55f, -0.88f, 0.1f}, {-0.30f, -0.84f, 0.1f},
-        {-0.05f, -0.87f, 0.1f}, { 0.20f, -0.83f, 0.1f},
-        { 0.45f, -0.88f, 0.1f}, { 0.70f, -0.84f, 0.1f},
-        { 0.95f, -0.87f, 0.1f}, {-0.95f, -0.25f, 0.1f}
-    };
-    for (const auto& position : bushPositions) {
-        DrawableObject bushObject(Model(bushes, 8730), *_shader);
+    std::uniform_real_distribution<float> bushScale(0.2f, 0.35f);
+    for (int i = 0; i < 12; ++i) {
+        const glm::vec3 position(xPosition(generator), -0.8f + 0.08f * (i % 2), 0.1f);
+        DrawableObject bushObject(Model(bushes, 8730));
         bushObject.transformation()
-            .scale(0.3f)
-            .translate(position);
+            .translate(position)
+            .scale(bushScale(generator));
         forestScene.addObject(std::move(bushObject));
     }
 
-    DrawableObject sunObject(Model(sphere, 2880), *_shader);
-    sunObject.transformation()
-        .scale(0.2f)
-        .translate(glm::vec3(0.9f, 0.7f, -0.2f));
-    forestScene.addObject(std::move(sunObject));
-    DrawableObject forestSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT), *_shader);
+    DrawableObject forestSunObject(Model(sphere, 2880));
+    forestSunObject.transformation()
+        .translate(glm::vec3(0.9f, 0.7f, -0.2f))
+        .scale(0.2f);
+    forestScene.addObject(std::move(forestSunObject));
+    DrawableObject forestSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
     forestSignature.transformation()
-        .scale(0.1f)
-        .translate(glm::vec3(-0.9f, -0.9f, 0.0f));
+        .translate(glm::vec3(-0.9f, -0.9f, 0.0f))
+        .scale(0.1f);
     forestScene.addObject(std::move(forestSignature));
     _scenes.push_back(std::move(forestScene));
 
-    Scene logoScene{};
+    Scene solarSystemScene(*_shaderBasic);
+    DrawableObject sunObject(Model(sun, 11520, true));
+    sunObject.transformation().scale(0.22f);
+    solarSystemScene.addObject(std::move(sunObject));
+
+    Transformation earthOrbit;
+    earthOrbit
+        .rotateDynamic(0.3f, glm::vec3(0.0f, 0.0f, 1.0f))
+        .translate(glm::vec3(0.55f, 0.0f, 0.0f));
+    DrawableObject earthObject(Model(earth, 11520, true));
+    Transformation earthTransform;
+    earthTransform
+        .combine(earthOrbit)
+        .rotate(4.65f, glm::vec3(1.0f, 0.0f, 0.0f))
+        .rotateDynamic(-6.f, glm::vec3(0.0f, 1.0f, 0.0f))
+        .scale(0.09f);
+    earthObject.setTransformation(earthTransform);
+    solarSystemScene.addObject(std::move(earthObject));
+
+    Transformation moonTransform;
+    moonTransform
+        .combine(earthOrbit)
+        .rotateDynamic(0.8f, glm::vec3(0.0f, 0.0f, 1.0f))
+        .translate(glm::vec3(0.18f, 0.0f, 0.0f))
+        .scale(0.025f);
+    DrawableObject moonObject(Model(moon, 11520, true));
+    moonObject.setTransformation(moonTransform);
+    solarSystemScene.addObject(std::move(moonObject));
+
+    DrawableObject solarSignature(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
+    solarSignature.transformation().translate(glm::vec3(-0.9f, -0.9f, 0.0f)).scale(0.1f);
+    solarSystemScene.addObject(std::move(solarSignature));
+    _scenes.push_back(std::move(solarSystemScene));
+
+    Scene logoScene(*_shaderBasic);
     Model logoModel(text_mesh, TEXT_MESH_VERTEX_COUNT);
-    DrawableObject logoObject(std::move(logoModel), *_shader);
+    DrawableObject logoObject(std::move(logoModel));
     logoObject.transformation()
-        .scale(0.1f)
-        .rotate(0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+        .rotateDynamic(0.5f, glm::vec3(0.0f, 1.0f, 0.0f))
+        .scale(0.8f);
     logoScene.addObject(std::move(logoObject));
     _scenes.push_back(std::move(logoScene));
 }
@@ -142,6 +184,8 @@ void Application::run() {
             _currentSceneIndex = 2;
         } else if (glfwGetKey(_window, GLFW_KEY_4) == GLFW_PRESS) {
             _currentSceneIndex = 3;
+        } else if (glfwGetKey(_window, GLFW_KEY_5) == GLFW_PRESS) {
+            _currentSceneIndex = 4;
         }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

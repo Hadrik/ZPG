@@ -4,18 +4,25 @@
 
 #include "Model.h"
 
-Model::Model(const float *mesh, const GLsizei vertexCount) : _vertexCount(vertexCount) {
+Model::Model(const float *mesh, const GLsizei vertexCount, const bool withColor) : _vertexCount(vertexCount) {
     glGenBuffers(1, &_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * _vertexCount * 6, mesh, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * _vertexCount * (withColor ? 9 : 6), mesh, GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    if (withColor) {
+        glEnableVertexAttribArray(2);
+    }
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+    GLsizei stride = sizeof(float) * (withColor ? 9 : 6);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (GLvoid*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (GLvoid*)(3 * sizeof(float)));
+    if (withColor) {
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (GLvoid*)(6 * sizeof(float)));
+    }
 }
 
 Model::Model(Model&& other) noexcept

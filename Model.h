@@ -9,7 +9,7 @@
 
 class Model {
 public:
-    Model(const float* mesh, GLsizei vertexCount);
+    Model(const float* mesh, GLsizei vertexCount, bool withColor = false);
     ~Model();
 
     Model(const Model&) = delete;

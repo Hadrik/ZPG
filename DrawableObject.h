@@ -11,8 +11,7 @@
 
 class DrawableObject {
 public:
-    explicit DrawableObject(Model&& model, const ShaderProgram& shaderProgram)
-        : _model(std::move(model)), _shaderProgram(shaderProgram) {};
+    explicit DrawableObject(Model&& model) : _model(std::move(model)) {};
     ~DrawableObject() = default;
 
     DrawableObject(const DrawableObject&) = delete;
@@ -20,13 +19,13 @@ public:
     DrawableObject(DrawableObject&&) noexcept = default;
     DrawableObject& operator=(DrawableObject&&) noexcept = delete;
 
-    [[nodiscard]] Transformation& transformation() { return _transformation; }
-    void draw() const;
+    Transformation& transformation() { return _transformation; }
+    void setTransformation(const Transformation& transformation) { _transformation = transformation; }
+    void draw(const ShaderProgram& shader) const;
 
 private:
     Model _model;
     Transformation _transformation{};
-    const ShaderProgram& _shaderProgram;
 };
 
 

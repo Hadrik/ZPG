@@ -4,6 +4,9 @@
 
 #ifndef ZPG_TRANSFORMATION_H
 #define ZPG_TRANSFORMATION_H
+#include <functional>
+#include <vector>
+
 #include "glm/mat4x4.hpp"
 #include "glm/vec3.hpp"
 
@@ -17,11 +20,14 @@ public:
     Transformation& scale(glm::vec3 scale);
     Transformation& scale(float scale);
     Transformation& rotate(float angle, glm::vec3 axis);
+    Transformation& rotateDynamic(float speed, glm::vec3 axis);
+    Transformation& combine(const Transformation& transformation);
 
-    [[nodiscard]] const glm::mat4& getMatrix() const { return _matrix; }
+    [[nodiscard]] glm::mat4 getMatrix() const;
 
 private:
-    glm::mat4 _matrix = glm::mat4(1.0f);
+    using Operation = std::function<glm::mat4()>;
+    std::vector<Operation> _operations;
 };
 
 

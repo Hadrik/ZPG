@@ -21,7 +21,7 @@ public:
 
 private:
     GLFWwindow* _window;
-    std::unique_ptr<ShaderProgram> _shader = nullptr;
+    std::unique_ptr<ShaderProgram> _shaderBasic = nullptr;
     std::vector<Scene> _scenes;
     int _currentSceneIndex{0};
 

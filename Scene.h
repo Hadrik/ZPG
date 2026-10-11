@@ -13,7 +13,7 @@
 
 class Scene {
 public:
-    Scene() = default;
+    explicit Scene(const ShaderProgram& shaderProgram) : _shaderProgram(shaderProgram) {}
     ~Scene() = default;
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
@@ -25,6 +25,7 @@ public:
 
 private:
     std::vector<DrawableObject> _objects;
+    const ShaderProgram& _shaderProgram;
 };
 
 
