@@ -42,6 +42,8 @@ add_executable(${PROJECT_NAME} main.cpp
         DrawableObject.h
         Transformation.cpp
         Transformation.h
+        Camera.cpp
+        Camera.h
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad glm::glm)

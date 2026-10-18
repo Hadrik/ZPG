@@ -30,11 +30,29 @@ _fragmentShader(fragment_path, GL_FRAGMENT_SHADER) {
 }
 
 ShaderProgram::~ShaderProgram() {
+    if (_camera != nullptr) {
+        _camera->removeObserver(*this);
+    }
     glDeleteProgram(_id);
+}
+
+void ShaderProgram::observe(Camera& camera) {
+    if (_camera != nullptr) {
+        _camera->removeObserver(*this);
+    }
+    _camera = &camera;
+    _camera->addObserver(*this);
 }
 
 void ShaderProgram::use() const {
     glUseProgram(_id);
+    set("viewMatrix", _viewMatrix);
+    set("projectionMatrix", _projectionMatrix);
+}
+
+void ShaderProgram::onCameraChanged(const glm::mat4& view, const glm::mat4& projection) {
+    _viewMatrix = view;
+    _projectionMatrix = projection;
 }
 
 void ShaderProgram::set(const std::string &name, const bool value) const {
