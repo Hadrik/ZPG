@@ -23,13 +23,15 @@ Model::Model(const float *mesh, const GLsizei vertexCount, const bool withColor)
     if (withColor) {
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (GLvoid*)(6 * sizeof(float)));
     }
+    _hasColor = withColor;
 }
 
 Model::Model(Model&& other) noexcept
-    : _vbo(other._vbo), _vao(other._vao), _vertexCount(other._vertexCount) {
+    : _hasColor(other._hasColor), _vbo(other._vbo), _vao(other._vao), _vertexCount(other._vertexCount) {
     other._vbo = 0;
     other._vao = 0;
     other._vertexCount = 0;
+    other._hasColor = false;
 }
 
 Model& Model::operator=(Model&& other) noexcept {
@@ -43,10 +45,12 @@ Model& Model::operator=(Model&& other) noexcept {
     _vbo = other._vbo;
     _vao = other._vao;
     _vertexCount = other._vertexCount;
+    _hasColor = other._hasColor;
 
     other._vbo = 0;
     other._vao = 0;
     other._vertexCount = 0;
+    other._hasColor = false;
     return *this;
 }
 

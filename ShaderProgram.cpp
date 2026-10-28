@@ -48,6 +48,7 @@ void ShaderProgram::use() const {
     glUseProgram(_id);
     set("viewMatrix", _viewMatrix);
     set("projectionMatrix", _projectionMatrix);
+    setIfPresent("cameraPosition", _camera->getTransform().position);
 }
 
 void ShaderProgram::onCameraChanged(const glm::mat4& view, const glm::mat4& projection) {
@@ -73,6 +74,34 @@ void ShaderProgram::set(const std::string &name, glm::mat4 value) const {
 
 void ShaderProgram::set(const std::string &name, glm::vec3 value) const {
     glUniform3fv(getLocation(name), 1, glm::value_ptr(value));
+}
+
+void ShaderProgram::setIfPresent(const std::string &name, glm::mat4 value) const {
+    const GLint location = glGetUniformLocation(_id, name.c_str());
+    if (location != -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    }
+}
+
+void ShaderProgram::setIfPresent(const std::string &name, glm::vec3 value) const {
+    const GLint location = glGetUniformLocation(_id, name.c_str());
+    if (location != -1) {
+        glUniform3fv(location, 1, glm::value_ptr(value));
+    }
+}
+
+void ShaderProgram::setIfPresent(const std::string &name, float value) const {
+    const GLint location = glGetUniformLocation(_id, name.c_str());
+    if (location != -1) {
+        glUniform1f(location, value);
+    }
+}
+
+void ShaderProgram::setIfPresent(const std::string &name, bool value) const {
+    const GLint location = glGetUniformLocation(_id, name.c_str());
+    if (location != -1) {
+        glUniform1i(location, static_cast<int>(value));
+    }
 }
 
 GLint ShaderProgram::getLocation(const std::string &name) const {

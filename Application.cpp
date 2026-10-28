@@ -14,6 +14,10 @@
 #include "Models/tree.h"
 #include "Models/bushes.h"
 #include "Models/clock.h"
+#include "Models/sun.h"
+#include "Models/moon.h"
+#include "Models/earth.h"
+#include "Models/ship.h"
 
 Application::Application() {
     glfwInit();
@@ -70,10 +74,18 @@ Application::Application() {
     _shaderTree = std::make_unique<ShaderProgram>("../Shaders/Tree.vert", "../Shaders/Tree.frag");
     _shaderBush = std::make_unique<ShaderProgram>("../Shaders/Bush.vert", "../Shaders/Bush.frag");
     _shaderClock = std::make_unique<ShaderProgram>("../Shaders/Clock.vert", "../Shaders/Clock.frag");
+    _shaderPhong = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Phong.frag");
+    _shaderAmbient = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Ambient.frag");
+    _shaderDiffuse = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Diffuse.frag");
+    _shaderBlinnPhong = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/BlinnPhong.frag");
     _shaderBasic->observe(_camera);
     _shaderTree->observe(_camera);
     _shaderBush->observe(_camera);
     _shaderClock->observe(_camera);
+    _shaderPhong->observe(_camera);
+    _shaderAmbient->observe(_camera);
+    _shaderDiffuse->observe(_camera);
+    _shaderBlinnPhong->observe(_camera);
 }
 
 Application::~Application() {
@@ -82,6 +94,65 @@ Application::~Application() {
 }
 
 void Application::prepareScenes() {
+    Scene ballsScene(*_shaderPhong);
+    const std::tuple<glm::vec3, ShaderProgram*> ballConfigs[] = {
+        {glm::vec3(1.0f, 0.0f, 0.0f), _shaderAmbient.get()},
+        {glm::vec3(-1.0f, 0.0f, 0.0f), _shaderDiffuse.get()},
+        {glm::vec3(0.0f, 1.0f, 0.0f), _shaderPhong.get()},
+        {glm::vec3(0.0f, -1.0f, 0.0f), _shaderBlinnPhong.get()}
+    };
+    for (const auto& config : ballConfigs) {
+        DrawableObject ballObject(Model(sphere, 2880), std::get<1>(config));
+        ballObject.transformation()
+            .translate(std::get<0>(config))
+            .scale(0.5f);
+        ballsScene.addObject(std::move(ballObject));
+    }
+    ballsScene.setCameraLocation({glm::vec3(0.0f, 0.0f, 5.0f), -90.0f, 0.0f})
+        .setBackgroundColor(glm::vec3(0.f, 0.f, 0.f));
+    ballsScene.addLight(PointLight(glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.0f, 1.0f, 1.0f), 1.0f));
+    _scenes.push_back(std::move(ballsScene));
+
+
+    Scene planetScene(*_shaderPhong);
+    DrawableObject sunObject(Model(sun, 11520, true), _shaderAmbient.get());
+    sunObject.transformation()
+        .translate(glm::vec3(0.0f, 0.0f, 0.0f))
+        .scale(1.0f);
+    planetScene.addObject(std::move(sunObject));
+
+    Transformation earthTransformation;
+    earthTransformation.combine(sunObject.transformation())
+        .rotateDynamic(0.1f, glm::vec3(0.f, 1.f, 0.f))
+        .translate(glm::vec3(3.0f, 0.0f, 0.0f))
+        .scale(0.25f);
+
+    DrawableObject earthObject(Model(earth, 11520, true));
+    earthObject.transformation()
+        .combine(earthTransformation)
+        .rotateDynamic(1.f, glm::vec3(0.f, 1.f, 0.f));
+    planetScene.addObject(std::move(earthObject));
+
+    DrawableObject moonObject(Model(moon, 11520, true));
+    moonObject.transformation()
+        .combine(earthTransformation)
+        .rotateDynamic(0.2f, glm::vec3(0.f, 1.f, 0.f))
+        .translate(glm::vec3(2.0f, 0.0f, 0.0f))
+        .scale(0.2f);
+    planetScene.addObject(std::move(moonObject));
+
+    DrawableObject shipObject(Model(ship, ship_vertex_count, true));
+    shipObject.transformation()
+        .rotateDynamic(0.1f, glm::vec3(1.f, 0.f, 0.f))
+        .translate(glm::vec3(0.0f, 0.0f, 3.0f))
+        .scale(0.7f);
+    planetScene.addObject(std::move(shipObject));
+
+    planetScene.setBackgroundColor(glm::vec3(0.f, 0.f, 0.f))
+        .setCameraLocation({glm::vec3(20.0f, 20.0f, 20.0f), 0.0f, 45.0f});
+    _scenes.push_back(std::move(planetScene));
+
+
     Scene forestScene(*_shaderBasic);
     constexpr int numTrees = 100;
     constexpr int numBushes = 50;
@@ -135,17 +206,20 @@ void Application::prepareScenes() {
         forestScene.addObject(std::move(clockObject));
     }
 
-    DrawableObject sunObject(Model(sphere, 2880));
-    sunObject.transformation()
+    DrawableObject sunObject1(Model(sphere, 2880));
+    sunObject1.transformation()
         .translate(glm::vec3(5.0f, 5.0f, -5.0f))
         .scale(1.0f);
-    forestScene.addObject(std::move(sunObject));
+    forestScene.addObject(std::move(sunObject1));
 
     DrawableObject signatureObject(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
     signatureObject.transformation()
         .translate(glm::vec3(-1.0f, 0.5f, 0.2f))
         .scale(1.0f);
     forestScene.addObject(std::move(signatureObject));
+
+    forestScene.setCameraLocation({glm::vec3(0.0f, 2.0f, 5.0f), -90.0f, -20.0f})
+        .setBackgroundColor(glm::vec3(0.1f, 0.8f, 0.8f));
 
     _scenes.push_back(std::move(forestScene));
 }
@@ -156,6 +230,7 @@ void Application::run() {
         return;
     }
     _currentScene = &_scenes.front();
+    _camera.setTransform(_currentScene->getCameraLocation());
 
     while (!glfwWindowShouldClose(_window)) {
         static auto previousFrame = std::chrono::steady_clock::now();
@@ -163,8 +238,8 @@ void Application::run() {
         const float deltaTime = std::chrono::duration<float>(currentFrame - previousFrame).count();
         previousFrame = currentFrame;
         process_camera_input(deltaTime);
-
-        glClearColor(0.1f, 0.8f, 0.8f, 1.0f);
+        const auto bg = _currentScene->getBackgroundColor();
+        glClearColor(bg.r, bg.g, bg.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         _shaderClock->use();
@@ -207,6 +282,7 @@ void Application::mouse_button_callback(const int button, const int action, cons
 
 void Application::cycleScenes() {
     _currentSceneIndex = (_currentSceneIndex + 1) % _scenes.size();
+    _camera.setTransform(_currentScene->getCameraLocation());
     _currentScene = &_scenes[_currentSceneIndex];
 }
 

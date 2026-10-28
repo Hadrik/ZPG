@@ -19,8 +19,10 @@ public:
 
     [[nodiscard]] GLuint VAO() const { return _vao; }
     [[nodiscard]] GLsizei vertexCount() const { return _vertexCount; }
+    [[nodiscard]] bool hasColor() const { return _hasColor; }
 
 private:
+    bool _hasColor = false;
     GLuint _vbo = 0;
     GLuint _vao = 0;
     GLsizei _vertexCount = 0;

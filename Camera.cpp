@@ -18,14 +18,14 @@ Camera::Camera()
       _pitch(0.0f),
       _aspectRatio(1.0f) {}
 
-void Camera::addObserver(CameraObserver& observer) {
+void Camera::addObserver(ICameraObserver& observer) {
     if (std::find(_observers.begin(), _observers.end(), &observer) == _observers.end()) {
         _observers.push_back(&observer);
         observer.onCameraChanged(getViewMatrix(), getProjectionMatrix());
     }
 }
 
-void Camera::removeObserver(CameraObserver& observer) {
+void Camera::removeObserver(ICameraObserver& observer) {
     _observers.erase(std::remove(_observers.begin(), _observers.end(), &observer), _observers.end());
 }
 
@@ -63,6 +63,14 @@ void Camera::resize(const int width, const int height) {
     notifyObservers();
 }
 
+void Camera::setTransform(const CameraLocation &location) {
+    _position = location.position;
+    _yaw = location.yaw;
+    _pitch = std::clamp(location.pitch, -89.0f, 89.0f);
+    updateFront();
+    notifyObservers();
+}
+
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(_position, _position + _front, _up);
 }
@@ -71,7 +79,7 @@ glm::mat4 Camera::getProjectionMatrix() const {
     return glm::perspective(glm::radians(45.0f), _aspectRatio, 0.1f, 100.0f);
 }
 
-void Camera::notifyObservers() {
+void Camera::notifyObservers() const {
     const glm::mat4 view = getViewMatrix();
     const glm::mat4 projection = getProjectionMatrix();
     for (auto* observer : _observers) {

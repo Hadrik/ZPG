@@ -22,6 +22,7 @@ public:
     Transformation& transformation() { return _transformation; }
     void setTransformation(const Transformation& transformation) { _transformation = transformation; }
     void draw(const ShaderProgram& shaderProgram) const;
+    [[nodiscard]] const ShaderProgram& getShaderOr(const ShaderProgram& fallback) const;
 
 private:
     Model _model;
