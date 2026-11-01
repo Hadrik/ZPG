@@ -52,3 +52,8 @@ glm::mat4 Transformation::getMatrix() const {
     }
     return result;
 }
+
+glm::vec3 Transformation::getPosition() const {
+    const glm::vec4 position = getMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    return { position };
+}

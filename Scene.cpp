@@ -8,8 +8,8 @@ void Scene::addObject(DrawableObject&& object) {
     _objects.push_back(std::move(object));
 }
 
-void Scene::addLight(const PointLight &light) {
-    _pointLight = light;
+void Scene::addLight(PointLight &&light) {
+    _pointLight = std::move(light);
 }
 
 void Scene::draw() const {
@@ -17,11 +17,12 @@ void Scene::draw() const {
         const auto& shader = object.getShaderOr(_shaderProgram);
 
         shader.use();
-        if (_pointLight) {
-            shader.setIfPresent("lightPosition", _pointLight->getPosition());
-            shader.setIfPresent("lightColor", _pointLight->getColor());
-            shader.setIfPresent("lightIntensity", _pointLight->getIntensity());
-        }
+        shader.setIfPresent("lightPosition", _pointLight.getPosition());
+        shader.setIfPresent("lightColor", _pointLight.getColor());
+        shader.setIfPresent("lightIntensity", _pointLight.getIntensity());
+        shader.setIfPresent("lightConstant", _pointLight.getConstant());
+        shader.setIfPresent("lightLinear", _pointLight.getLinear());
+        shader.setIfPresent("lightQuadratic", _pointLight.getQuadratic());
 
         object.draw(shader);
     }

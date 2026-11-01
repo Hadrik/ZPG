@@ -17,6 +17,12 @@ void main() {
     vec3 normal = hasColor ? cNormal : normCol;
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
     worldPos = vec3(modelMatrix * vec4(position, 1.0));
-    worldNorm = mat3(transpose(inverse(modelMatrix))) * normal;
-    vertColor = hasColor ? normCol : vec3(1.0, 1.0, 1.0);
+
+    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
+
+    worldNorm = normalMatrix * normal;
+//    worldNorm = mat3(modelMatrix) * normal;
+//    worldNorm = normal;
+
+    vertColor = hasColor ? normCol : vec3(0.385, 0.647, 0.812);
 }

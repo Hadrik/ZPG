@@ -71,7 +71,7 @@ Application::Application() {
     });
 
     _shaderBasic = std::make_unique<ShaderProgram>("../Shaders/Default.vert", "../Shaders/Default.frag");
-    _shaderTree = std::make_unique<ShaderProgram>("../Shaders/Tree.vert", "../Shaders/Tree.frag");
+    _shaderTree = std::make_unique<ShaderProgram>("../Shaders/Tree.vert", "../Shaders/Phong.frag");
     _shaderBush = std::make_unique<ShaderProgram>("../Shaders/Bush.vert", "../Shaders/Bush.frag");
     _shaderClock = std::make_unique<ShaderProgram>("../Shaders/Clock.vert", "../Shaders/Clock.frag");
     _shaderPhong = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Phong.frag");
@@ -94,6 +94,32 @@ Application::~Application() {
 }
 
 void Application::prepareScenes() {
+    Scene singleBallScene(*_shaderPhong);
+    DrawableObject ballObject(Model(sphere, 2880));
+    ballObject.transformation()
+        .translate(glm::vec3(0.0f, 0.0f, 5.0f))
+        .scale(1.0f);
+    singleBallScene.addObject(std::move(ballObject));
+    singleBallScene.setCameraLocation({glm::vec3(0.0f, 0.0f, 10.0f), -90.0f, 0.0f})
+        .setBackgroundColor(glm::vec3(0.f, 0.f, 0.f));
+    PointLight singleBallLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+    singleBallLight.transformation().translate(glm::vec3(0.0f, 0.0f, 5.0f));
+    singleBallScene.addLight(std::move(singleBallLight));
+    _scenes.push_back(std::move(singleBallScene));
+
+    Scene scaledBallScene(*_shaderPhong);
+    DrawableObject scaledBallObject(Model(sphere, 2880));
+    scaledBallObject.transformation()
+        .translate(glm::vec3(0.0f, 0.0f, 0.0f))
+        .scale(glm::vec3(2.0f, 1.0f, 1.0f));
+    scaledBallScene.addObject(std::move(scaledBallObject));
+    scaledBallScene.setCameraLocation({glm::vec3(0.0f, 0.0f, 10.0f), -90.0f, 0.0f})
+        .setBackgroundColor(glm::vec3(0.f, 0.f, 0.f));
+    PointLight scaledBallLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+    scaledBallLight.transformation().translate(glm::vec3(5.0f, 0.0f, 0.0f));
+    scaledBallScene.addLight(std::move(scaledBallLight));
+    _scenes.push_back(std::move(scaledBallScene));
+
     Scene ballsScene(*_shaderPhong);
     const std::tuple<glm::vec3, ShaderProgram*> ballConfigs[] = {
         {glm::vec3(1.0f, 0.0f, 0.0f), _shaderAmbient.get()},
@@ -102,7 +128,8 @@ void Application::prepareScenes() {
         {glm::vec3(0.0f, -1.0f, 0.0f), _shaderBlinnPhong.get()}
     };
     for (const auto& config : ballConfigs) {
-        DrawableObject ballObject(Model(sphere, 2880), std::get<1>(config));
+        // DrawableObject ballObject(Model(sphere, 2880), std::get<1>(config));
+        DrawableObject ballObject(Model(sphere, 2880), _shaderPhong.get());
         ballObject.transformation()
             .translate(std::get<0>(config))
             .scale(0.5f);
@@ -110,7 +137,9 @@ void Application::prepareScenes() {
     }
     ballsScene.setCameraLocation({glm::vec3(0.0f, 0.0f, 5.0f), -90.0f, 0.0f})
         .setBackgroundColor(glm::vec3(0.f, 0.f, 0.f));
-    ballsScene.addLight(PointLight(glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.0f, 1.0f, 1.0f), 1.0f));
+    PointLight ballsLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+    ballsLight.transformation().translate(glm::vec3(0.0f, 0.0f, 0.0f));
+    ballsScene.addLight(std::move(ballsLight));
     _scenes.push_back(std::move(ballsScene));
 
 
@@ -149,26 +178,32 @@ void Application::prepareScenes() {
     planetScene.addObject(std::move(shipObject));
 
     planetScene.setBackgroundColor(glm::vec3(0.f, 0.f, 0.f))
-        .setCameraLocation({glm::vec3(20.0f, 20.0f, 20.0f), 0.0f, 45.0f});
+        .setCameraLocation({glm::vec3(0.0f, 8.0f, 8.0f), -90.0f, -45.0f});
+    PointLight planetLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
+    planetLight.transformation().translate(glm::vec3(0.0f, 0.0f, 0.0f));
+    planetScene.addLight(std::move(planetLight));
     _scenes.push_back(std::move(planetScene));
 
 
-    Scene forestScene(*_shaderBasic);
+    Scene forestScene(*_shaderPhong);
     constexpr int numTrees = 100;
     constexpr int numBushes = 50;
     constexpr float planeSize = 10.f;
+    constexpr float planeR = 0.0f;
+    constexpr float planeG = 0.8f;
+    constexpr float planeB = 0.0f;
 
     std::mt19937 generator(0);
 
     constexpr float plainMesh[] = {
-        planeSize, 0.0f,  planeSize, 0.0f, 1.0f, 0.0f,
-        planeSize, 0.0f, -planeSize, 0.0f, 1.0f, 0.0f,
-       -planeSize, 0.0f, -planeSize, 0.0f, 1.0f, 0.0f,
-       -planeSize, 0.0f,  planeSize, 0.0f, 1.0f, 0.0f,
-        planeSize, 0.0f,  planeSize, 0.0f, 1.0f, 0.0f,
-       -planeSize, 0.0f, -planeSize, 0.0f, 1.0f, 0.0f
+        planeSize, 0.0f,  planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
+        planeSize, 0.0f, -planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
+       -planeSize, 0.0f, -planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
+       -planeSize, 0.0f,  planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
+        planeSize, 0.0f,  planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
+       -planeSize, 0.0f, -planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f
     };
-    DrawableObject plainObject(Model(plainMesh, 6));
+    DrawableObject plainObject(Model(plainMesh, 6, true));
     forestScene.addObject(std::move(plainObject));
 
     std::uniform_real_distribution<float> positionDist(-planeSize, planeSize);
@@ -206,20 +241,24 @@ void Application::prepareScenes() {
         forestScene.addObject(std::move(clockObject));
     }
 
-    DrawableObject sunObject1(Model(sphere, 2880));
-    sunObject1.transformation()
-        .translate(glm::vec3(5.0f, 5.0f, -5.0f))
-        .scale(1.0f);
-    forestScene.addObject(std::move(sunObject1));
+    DrawableObject forestLightObject(Model(sun, 11520, true), _shaderAmbient.get());
+    forestLightObject.transformation()
+        .rotateDynamic(0.3f, glm::vec3(0.f, 1.f, 0.f))
+        .translate(glm::vec3(3.0f, 1.0f, 0.0f))
+        .scale(0.1f);
+    forestScene.addObject(std::move(forestLightObject));
+    PointLight forestLight(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f);
+    forestLight.transformation().combine(forestLightObject.transformation());
+    forestScene.addLight(std::move(forestLight));
 
     DrawableObject signatureObject(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
     signatureObject.transformation()
-        .translate(glm::vec3(-1.0f, 0.5f, 0.2f))
+        .translate(glm::vec3(-1.0f, 5.0f, 0.2f))
         .scale(1.0f);
     forestScene.addObject(std::move(signatureObject));
 
     forestScene.setCameraLocation({glm::vec3(0.0f, 2.0f, 5.0f), -90.0f, -20.0f})
-        .setBackgroundColor(glm::vec3(0.1f, 0.8f, 0.8f));
+        .setBackgroundColor(glm::vec3(0.f, 0.f, 0.05f));
 
     _scenes.push_back(std::move(forestScene));
 }
@@ -243,7 +282,7 @@ void Application::run() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         _shaderClock->use();
-        _shaderClock->set("elapsedTime", static_cast<float>(glfwGetTime()));
+        _shaderClock->set("elapsedTime", static_cast<float>(glfwGetTime())); // For clock shader
         _currentScene->draw();
 
         glfwSwapBuffers(_window);
@@ -282,8 +321,8 @@ void Application::mouse_button_callback(const int button, const int action, cons
 
 void Application::cycleScenes() {
     _currentSceneIndex = (_currentSceneIndex + 1) % _scenes.size();
-    _camera.setTransform(_currentScene->getCameraLocation());
     _currentScene = &_scenes[_currentSceneIndex];
+    _camera.setTransform(_currentScene->getCameraLocation());
 }
 
 void Application::key_callback(const int key, const int scancode, const int action, const int mods) {

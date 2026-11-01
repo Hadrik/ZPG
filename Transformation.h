@@ -24,6 +24,7 @@ public:
     Transformation& combine(const Transformation& transformation);
 
     [[nodiscard]] glm::mat4 getMatrix() const;
+    [[nodiscard]] glm::vec3 getPosition() const;
 
 private:
     using Operation = std::function<glm::mat4()>;

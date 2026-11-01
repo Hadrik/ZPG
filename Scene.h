@@ -23,7 +23,7 @@ public:
     Scene& operator=(Scene&&) noexcept = delete;
 
     void addObject(DrawableObject&& object);
-    void addLight(const PointLight& light);
+    void addLight(PointLight&& light);
     void draw() const;
 
     Scene& setCameraLocation(const CameraLocation& location);
@@ -34,7 +34,7 @@ public:
 
 private:
     std::vector<DrawableObject> _objects;
-    std::optional<PointLight> _pointLight;
+    PointLight _pointLight = PointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     CameraLocation _cameraLocation {glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f};
     glm::vec3 _bgColor = glm::vec3(1.0f, 1.0f, 1.0f);
     const ShaderProgram& _shaderProgram;
