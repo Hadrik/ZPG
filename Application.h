@@ -31,6 +31,7 @@ private:
     std::unique_ptr<ShaderProgram> _shaderDiffuse = nullptr;
     std::unique_ptr<ShaderProgram> _shaderPhong = nullptr;
     std::unique_ptr<ShaderProgram> _shaderBlinnPhong = nullptr;
+    std::unique_ptr<ShaderProgram> _shaderSkybox = nullptr;
     double _lastMouseX{0.0};
     double _lastMouseY{0.0};
     bool _rightMouseHeld{false};

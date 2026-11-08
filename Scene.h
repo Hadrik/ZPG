@@ -12,6 +12,7 @@
 #include "DrawableObject.h"
 #include "PointLight.h"
 #include "ShaderProgram.h"
+#include "Skybox.h"
 
 class Scene {
 public:
@@ -24,6 +25,7 @@ public:
 
     void addObject(DrawableObject&& object);
     void addLight(PointLight&& light);
+    void addSkybox(Skybox&& skybox);
     void draw() const;
 
     Scene& setCameraLocation(const CameraLocation& location);
@@ -34,6 +36,7 @@ public:
 
 private:
     std::vector<DrawableObject> _objects;
+    std::optional<Skybox> _skybox;
     PointLight _pointLight = PointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     CameraLocation _cameraLocation {glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f};
     glm::vec3 _bgColor = glm::vec3(1.0f, 1.0f, 1.0f);

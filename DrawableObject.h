@@ -4,8 +4,11 @@
 
 #ifndef ZPG_DRAWABLEOBJECT_H
 #define ZPG_DRAWABLEOBJECT_H
+#include <optional>
+
 #include "Model.h"
 #include "ShaderProgram.h"
+#include "Texture.h"
 #include "Transformation.h"
 
 
@@ -21,11 +24,13 @@ public:
 
     Transformation& transformation() { return _transformation; }
     void setTransformation(const Transformation& transformation) { _transformation = transformation; }
+    void setTexture(Texture&& texture);
     void draw(const ShaderProgram& shaderProgram) const;
     [[nodiscard]] const ShaderProgram& getShaderOr(const ShaderProgram& fallback) const;
 
 private:
     Model _model;
+    std::optional<Texture> _texture;
     Transformation _transformation{};
     ShaderProgram* _shaderProgram{nullptr};
 };

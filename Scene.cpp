@@ -12,7 +12,14 @@ void Scene::addLight(PointLight &&light) {
     _pointLight = std::move(light);
 }
 
+void Scene::addSkybox(Skybox&& skybox) {
+    _skybox = std::move(skybox);
+}
+
 void Scene::draw() const {
+    if (_skybox.has_value()) {
+        _skybox->draw();
+    }
     for (const auto& object : _objects) {
         const auto& shader = object.getShaderOr(_shaderProgram);
 

@@ -44,6 +44,12 @@ add_executable(${PROJECT_NAME} main.cpp
         Transformation.h
         Camera.cpp
         Camera.h
+        VertexAttributes.h
+        stb_image.h
+        Texture.cpp
+        Texture.h
+        Skybox.cpp
+        Skybox.h
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad glm::glm)

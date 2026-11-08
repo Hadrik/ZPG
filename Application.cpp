@@ -18,6 +18,13 @@
 #include "Models/moon.h"
 #include "Models/earth.h"
 #include "Models/ship.h"
+#include "Models/eb408.h"
+#include "Models/chair.h"
+#include "Models/table.h"
+#include "Models/door.h"
+#include "Models/fiona.h"
+#include "Models/shrek.h"
+#include "Models/board.h"
 
 Application::Application() {
     glfwInit();
@@ -53,6 +60,7 @@ Application::Application() {
     glViewport(0, 0, width, height);
     _camera.resize(width, height);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     glfwSetKeyCallback(_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
         if (const auto app = static_cast<Application*>(glfwGetWindowUserPointer(window))) {
@@ -78,6 +86,7 @@ Application::Application() {
     _shaderAmbient = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Ambient.frag");
     _shaderDiffuse = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/Diffuse.frag");
     _shaderBlinnPhong = std::make_unique<ShaderProgram>("../Shaders/Phong.vert", "../Shaders/BlinnPhong.frag");
+    _shaderSkybox = std::make_unique<ShaderProgram>("../Shaders/Skybox.vert", "../Shaders/Skybox.frag");
     _shaderBasic->observe(_camera);
     _shaderTree->observe(_camera);
     _shaderBush->observe(_camera);
@@ -86,6 +95,7 @@ Application::Application() {
     _shaderAmbient->observe(_camera);
     _shaderDiffuse->observe(_camera);
     _shaderBlinnPhong->observe(_camera);
+    _shaderSkybox->observe(_camera);
 }
 
 Application::~Application() {
@@ -94,6 +104,80 @@ Application::~Application() {
 }
 
 void Application::prepareScenes() {
+    Scene classScene(*_shaderPhong);
+
+    DrawableObject roomObject(Model(eb408, eb408_vertex_count, VertexAttributes::Attributes::Uv));
+    roomObject.setTexture(Texture("../Textures/eb408.png"));
+    roomObject.transformation()
+        .rotate(-M_PI / 2, glm::vec3(1.f, 0.f, 0.f));
+    classScene.addObject(std::move(roomObject));
+
+    DrawableObject doorObject(Model(door, door_vertex_count, VertexAttributes::Attributes::Uv));
+    doorObject.setTexture(Texture("../Textures/door.png"));
+    doorObject.transformation()
+        .translate(glm::vec3(-2.4f, 0.f, 7.6f))
+        .scale(0.011f)
+        .rotate(-M_PI / 2, glm::vec3(1.f, 0.f, 0.f));
+    classScene.addObject(std::move(doorObject));
+
+    DrawableObject tableObject(Model(table, table_vertex_count, VertexAttributes::Attributes::Uv));
+    tableObject.setTexture(Texture("../Textures/table.png"));
+    tableObject.transformation()
+        .translate(glm::vec3(0.f, 0.f, 3.f))
+        .rotate(-M_PI / 2, glm::vec3(1.f, 0.f, 0.f))
+        .rotate(M_PI / 2, glm::vec3(0.f, 0.f, 1.f));
+    classScene.addObject(std::move(tableObject));
+
+    DrawableObject chairObject(Model(chair, chair_vertex_count, VertexAttributes::Attributes::Uv));
+    chairObject.setTexture(Texture("../Textures/chair.png"));
+    chairObject.transformation()
+        .translate(glm::vec3(1.f, 0.f, 3.f))
+        .rotate(-M_PI / 2, glm::vec3(1.f, 0.f, 0.f))
+        .rotate(-M_PI / 2, glm::vec3(0.f, 0.f, 1.f));
+    classScene.addObject(std::move(chairObject));
+
+    DrawableObject shrekObject(Model(shrek, shrek_vertex_count, VertexAttributes::Attributes::Uv));
+    shrekObject.setTexture(Texture("../Textures/shrek.png"));
+    shrekObject.transformation()
+        .translate(glm::vec3(-2.f, 0.f, 3.f))
+        .rotateDynamic(1.f, glm::vec3(0.f, 1.f, 0.f));
+    classScene.addObject(std::move(shrekObject));
+
+    DrawableObject fionaObject(Model(fiona, fiona_vertex_count, VertexAttributes::Attributes::Uv));
+    fionaObject.setTexture(Texture("../Textures/fiona.png"));
+    fionaObject.transformation()
+        .translate(glm::vec3(0.5f, 0.f, 3.f))
+        .rotate(-M_PI / 2, glm::vec3(0.f, 1.f, 0.f));
+    classScene.addObject(std::move(fionaObject));
+
+    DrawableObject boardObject(Model(board, board_vertex_count, VertexAttributes::Attributes::Uv));
+    boardObject.setTexture(Texture("../Textures/board.png"));
+    boardObject.transformation()
+        .translate(glm::vec3(-3.8f, 0.f, 3.f))
+        .rotate(-M_PI / 2, glm::vec3(1.f, 0.f, 0.f));
+    classScene.addObject(std::move(boardObject));
+
+    DrawableObject signatureObject1(Model(text_mesh, TEXT_MESH_VERTEX_COUNT));
+    signatureObject1.transformation()
+        .translate(glm::vec3(-1.0f, 0.2f, 1.0f));
+    classScene.addObject(std::move(signatureObject1));
+
+    PointLight classLight(glm::vec3(1.0f), 1.0f);
+    classLight.transformation().translate(glm::vec3(0.f, 2.f, 4.f));
+    classScene.addLight(std::move(classLight));
+
+    classScene.addSkybox(Skybox(*_shaderSkybox, {
+        "../Textures/Skybox/posx.jpg",
+        "../Textures/Skybox/negx.jpg",
+        "../Textures/Skybox/posy.jpg",
+        "../Textures/Skybox/negy.jpg",
+        "../Textures/Skybox/posz.jpg",
+        "../Textures/Skybox/negz.jpg"
+    }));
+
+    _scenes.push_back(std::move(classScene));
+
+
     Scene singleBallScene(*_shaderPhong);
     DrawableObject ballObject(Model(sphere, 2880));
     ballObject.transformation()
@@ -144,7 +228,7 @@ void Application::prepareScenes() {
 
 
     Scene planetScene(*_shaderPhong);
-    DrawableObject sunObject(Model(sun, 11520, true), _shaderAmbient.get());
+    DrawableObject sunObject(Model(sun, 11520, VertexAttributes::Attributes::Color), _shaderAmbient.get());
     sunObject.transformation()
         .translate(glm::vec3(0.0f, 0.0f, 0.0f))
         .scale(1.0f);
@@ -156,13 +240,13 @@ void Application::prepareScenes() {
         .translate(glm::vec3(3.0f, 0.0f, 0.0f))
         .scale(0.25f);
 
-    DrawableObject earthObject(Model(earth, 11520, true));
+    DrawableObject earthObject(Model(earth, 11520, VertexAttributes::Attributes::Color));
     earthObject.transformation()
         .combine(earthTransformation)
         .rotateDynamic(1.f, glm::vec3(0.f, 1.f, 0.f));
     planetScene.addObject(std::move(earthObject));
 
-    DrawableObject moonObject(Model(moon, 11520, true));
+    DrawableObject moonObject(Model(moon, 11520, VertexAttributes::Attributes::Color));
     moonObject.transformation()
         .combine(earthTransformation)
         .rotateDynamic(0.2f, glm::vec3(0.f, 1.f, 0.f))
@@ -170,7 +254,7 @@ void Application::prepareScenes() {
         .scale(0.2f);
     planetScene.addObject(std::move(moonObject));
 
-    DrawableObject shipObject(Model(ship, ship_vertex_count, true));
+    DrawableObject shipObject(Model(ship, ship_vertex_count, VertexAttributes::Attributes::Color));
     shipObject.transformation()
         .rotateDynamic(0.1f, glm::vec3(1.f, 0.f, 0.f))
         .translate(glm::vec3(0.0f, 0.0f, 3.0f))
@@ -203,7 +287,7 @@ void Application::prepareScenes() {
         planeSize, 0.0f,  planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f,
        -planeSize, 0.0f, -planeSize, planeR, planeG, planeB, 0.0f, 1.0f, 0.0f
     };
-    DrawableObject plainObject(Model(plainMesh, 6, true));
+    DrawableObject plainObject(Model(plainMesh, 6, VertexAttributes::Attributes::Color));
     forestScene.addObject(std::move(plainObject));
 
     std::uniform_real_distribution<float> positionDist(-planeSize, planeSize);
@@ -233,7 +317,7 @@ void Application::prepareScenes() {
         glm::vec3(1.f, 0.2f, 1.f)
     };
     for (const auto& position : clockPositions) {
-        DrawableObject clockObject(Model(clockModel, 44826, true), _shaderClock.get());
+        DrawableObject clockObject(Model(clockModel, 44826, VertexAttributes::Attributes::Color), _shaderClock.get());
         clockObject.transformation()
             .translate(position)
             .rotate(3.14f, glm::vec3(0.f, 1.f, 0.f))
@@ -241,7 +325,7 @@ void Application::prepareScenes() {
         forestScene.addObject(std::move(clockObject));
     }
 
-    DrawableObject forestLightObject(Model(sun, 11520, true), _shaderAmbient.get());
+    DrawableObject forestLightObject(Model(sun, 11520, VertexAttributes::Attributes::Color), _shaderAmbient.get());
     forestLightObject.transformation()
         .rotateDynamic(0.3f, glm::vec3(0.f, 1.f, 0.f))
         .translate(glm::vec3(3.0f, 1.0f, 0.0f))
@@ -261,6 +345,38 @@ void Application::prepareScenes() {
         .setBackgroundColor(glm::vec3(0.f, 0.f, 0.05f));
 
     _scenes.push_back(std::move(forestScene));
+
+
+    Scene textureScene(*_shaderPhong);
+    constexpr float texturedPlain[] = {
+        1.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+        1.0f, 0.0f,-1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
+       -1.0f, 0.0f,-1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+
+       -1.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f,
+       -1.0f, 0.0f,-1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f
+    };
+
+    DrawableObject texturedPlainObject(Model(texturedPlain, 6, VertexAttributes::Attributes::Uv));
+    texturedPlainObject.setTexture(Texture("../Textures/wooden_fence.jpg"));
+    textureScene.addObject(std::move(texturedPlainObject));
+
+    PointLight textureLight(glm::vec3(1.0f), 1.f);
+    textureLight.transformation().translate(glm::vec3(0.0f, 1.0f, 0.0f));
+    textureScene.addLight(std::move(textureLight));
+
+    textureScene.addSkybox(Skybox(*_shaderSkybox, {
+        "../Textures/Skybox/posx.jpg",
+        "../Textures/Skybox/negx.jpg",
+        "../Textures/Skybox/posy.jpg",
+        "../Textures/Skybox/negy.jpg",
+        "../Textures/Skybox/posz.jpg",
+        "../Textures/Skybox/negz.jpg"
+    }));
+
+    textureScene.setBackgroundColor(glm::vec3(0.f, 0.f, 0.f));
+    _scenes.push_back(std::move(textureScene));
 }
 
 void Application::run() {

@@ -3,8 +3,10 @@
 in vec3 worldNorm;
 in vec3 worldPos;
 in vec3 vertColor;
+in vec2 uv;
 
 uniform bool hasColor;
+uniform bool hasUv;
 uniform mat4 viewMatrix;
 uniform vec3 cameraPosition;
 uniform vec3 lightPosition;
@@ -13,6 +15,7 @@ uniform float lightIntensity;
 uniform float lightConstant;
 uniform float lightLinear;
 uniform float lightQuadratic;
+uniform sampler2D textureUnit;
 
 out vec4 FragColor;
 
@@ -22,8 +25,7 @@ float attenuation(float d, float c, float l, float q) {
 }
 
 void main() {
-//    vec3 color = hasColor ? vertColor : vec3(0.385, 0.647, 0.812);
-    vec3 color = vertColor;
+    vec3 color = hasUv ? texture(textureUnit, uv).rgb : vertColor;
 
     // Ambient
     float ambientStrength = 0.01;

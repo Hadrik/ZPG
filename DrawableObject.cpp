@@ -4,10 +4,20 @@
 
 #include "DrawableObject.h"
 
+void DrawableObject::setTexture(Texture &&texture) {
+    _texture = std::move(texture);
+}
+
 void DrawableObject::draw(const ShaderProgram& shaderProgram) const {
     const auto shader = _shaderProgram ? _shaderProgram : &shaderProgram;
     shader->use();
     shader->setIfPresent("hasColor", _model.hasColor());
+    shader->setIfPresent("hasUv", _model.hasUv());
+     if (_texture.has_value()) {
+         constexpr GLuint textureUnit = 0;
+         _texture.value().bind(textureUnit);
+         shader->setIfPresent("textureUnit", static_cast<int>(textureUnit));
+    }
     shader->set("modelMatrix", _transformation.getMatrix());
 
     glBindVertexArray(_model.VAO());

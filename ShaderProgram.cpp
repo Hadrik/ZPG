@@ -104,6 +104,13 @@ void ShaderProgram::setIfPresent(const std::string &name, bool value) const {
     }
 }
 
+void ShaderProgram::setIfPresent(const std::string &name, int value) const {
+    const GLint location = glGetUniformLocation(_id, name.c_str());
+    if (location != -1) {
+        glUniform1i(location, value);
+    }
+}
+
 GLint ShaderProgram::getLocation(const std::string &name) const {
     const GLint location = glGetUniformLocation(_id, name.c_str());
     if (location == -1) {

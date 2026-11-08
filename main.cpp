@@ -1,8 +1,9 @@
 ﻿#define GLAD_GL_IMPLEMENTATION
 #include <iostream>
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
 #include "Application.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 int main() {
     try {

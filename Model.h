@@ -5,11 +5,12 @@
 #ifndef ZPG_MODEL_H
 #define ZPG_MODEL_H
 #include "glad/gl.h"
+#include "./VertexAttributes.h"
 
 
 class Model {
 public:
-    Model(const float* mesh, GLsizei vertexCount, bool withColor = false);
+    Model(const float* mesh, GLsizei vertexCount, VertexAttributes::Attributes attributes = VertexAttributes::Attributes::None);
     ~Model();
 
     Model(const Model&) = delete;
@@ -20,9 +21,11 @@ public:
     [[nodiscard]] GLuint VAO() const { return _vao; }
     [[nodiscard]] GLsizei vertexCount() const { return _vertexCount; }
     [[nodiscard]] bool hasColor() const { return _hasColor; }
+    [[nodiscard]] bool hasUv() const { return _hasUv; }
 
 private:
     bool _hasColor = false;
+    bool _hasUv = false;
     GLuint _vbo = 0;
     GLuint _vao = 0;
     GLsizei _vertexCount = 0;

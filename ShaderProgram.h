@@ -23,10 +23,11 @@ public:
     void set(const std::string& name, float value) const;
     void set(const std::string& name, glm::mat4 value) const;
     void set(const std::string& name, glm::vec3 value) const;
+    void setIfPresent(const std::string& name, bool value) const;
+    void setIfPresent(const std::string& name, int value) const;
+    void setIfPresent(const std::string& name, float value) const;
     void setIfPresent(const std::string& name, glm::mat4 value) const;
     void setIfPresent(const std::string& name, glm::vec3 value) const;
-    void setIfPresent(const std::string& name, float value) const;
-    void setIfPresent(const std::string& name, bool value) const;
 
 private:
     GLuint _id;
