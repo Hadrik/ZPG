@@ -3,9 +3,10 @@
 //
 
 #include "Scene.h"
+#include <stdexcept>
 
 void Scene::addObject(DrawableObject&& object) {
-    _objects.push_back(std::move(object));
+    _objects.push_back(std::move(std::make_tuple(_id.next(), std::move(object))));
 }
 
 void Scene::addLight(PointLight &&light) {
@@ -20,7 +21,7 @@ void Scene::draw() const {
     if (_skybox.has_value()) {
         _skybox->draw();
     }
-    for (const auto& object : _objects) {
+    for (const auto& [id, object] : _objects) {
         const auto& shader = object.getShaderOr(_shaderProgram);
 
         shader.use();
@@ -31,7 +32,7 @@ void Scene::draw() const {
         shader.setIfPresent("lightLinear", _pointLight.getLinear());
         shader.setIfPresent("lightQuadratic", _pointLight.getQuadratic());
 
-        object.draw(shader);
+        object.draw(shader, id);
     }
 }
 
@@ -43,4 +44,13 @@ Scene & Scene::setCameraLocation(const CameraLocation &location) {
 Scene & Scene::setBackgroundColor(const glm::vec3 &color) {
     _bgColor = color;
     return *this;
+}
+
+const DrawableObject& Scene::getObject(const int id) {
+    for (const auto& [objectId, object] : _objects) {
+        if (objectId == id) {
+            return object;
+        }
+    }
+    throw std::runtime_error("Object not found");
 }

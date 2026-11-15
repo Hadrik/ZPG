@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "Editor.h"
+
 
 class Application {
 public:
@@ -34,7 +36,12 @@ private:
     std::unique_ptr<ShaderProgram> _shaderSkybox = nullptr;
     double _lastMouseX{0.0};
     double _lastMouseY{0.0};
+    double _clickX{0.0};
+    double _clickY{0.0};
+    bool _clickPending{false};
     bool _rightMouseHeld{false};
+    glm::uvec2 _windowSize{800, 800};
+    Editor _editor;
 
     std::vector<Scene> _scenes;
     int _currentSceneIndex{0};
@@ -45,7 +52,7 @@ private:
     void cursor_position_callback(double x, double y);
     void mouse_button_callback(int button, int action, int mods);
     void process_camera_input(float deltaTime);
-    static void framebuffer_size_callback(GLFWwindow* window, int w, int h);
+    void framebuffer_size_callback(int w, int h);
 };
 
 

@@ -50,6 +50,10 @@ add_executable(${PROJECT_NAME} main.cpp
         Texture.h
         Skybox.cpp
         Skybox.h
+        IdGenerator.cpp
+        IdGenerator.h
+        Editor.cpp
+        Editor.h
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glfw glad glm::glm)

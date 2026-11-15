@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DrawableObject.h"
+#include "IdGenerator.h"
 #include "PointLight.h"
 #include "ShaderProgram.h"
 #include "Skybox.h"
@@ -34,13 +35,16 @@ public:
     Scene& setBackgroundColor(const glm::vec3& color);
     [[nodiscard]] glm::vec3 getBackgroundColor() const { return _bgColor; }
 
+    [[nodiscard]] const DrawableObject& getObject(int id);
+
 private:
-    std::vector<DrawableObject> _objects;
+    std::vector<std::tuple<GLint, DrawableObject>> _objects;
     std::optional<Skybox> _skybox;
     PointLight _pointLight = PointLight(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
     CameraLocation _cameraLocation {glm::vec3(0.0f, 0.0f, 3.0f), -90.0f, 0.0f};
     glm::vec3 _bgColor = glm::vec3(1.0f, 1.0f, 1.0f);
     const ShaderProgram& _shaderProgram;
+    IdGenerator _id {};
 };
 
 
